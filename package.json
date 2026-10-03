@@ -1,0 +1,12 @@
+{
+  "name": "fih-phone-skin-charm-viewer",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/charm-physics.test.cjs tests/phone-controls.test.cjs tests/mc2-preset.test.cjs tests/charm-collisions.test.cjs",
+    "test:browser": "node tests/viewer.test.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
+}
