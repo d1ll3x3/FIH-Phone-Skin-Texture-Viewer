@@ -32,11 +32,11 @@ if (-not (Test-Path -LiteralPath $venvPython)) {
         }
     }
     if (-not $pythonCommand) {
-        throw 'Instala Python 3.12 o posterior y vuelve a ejecutar este script.'
+        throw 'Install Python 3.12 or later, then run this script again.'
     }
-    Write-Host 'Creando entorno Python local...'
+    Write-Host 'Creating a local Python environment...'
     & $pythonCommand @pythonArguments -m venv (Join-Path $repoRoot '.venv')
-    if ($LASTEXITCODE -ne 0) { throw 'No se pudo crear el entorno Python.' }
+    if ($LASTEXITCODE -ne 0) { throw 'Could not create the Python environment.' }
 }
 
 $requirementsHash = (Get-FileHash -LiteralPath $requirementsPath -Algorithm SHA256).Hash
@@ -44,13 +44,13 @@ $installedHash = if (Test-Path -LiteralPath $requirementsStamp) {
     (Get-Content -LiteralPath $requirementsStamp -Raw).Trim()
 } else { '' }
 if ($requirementsHash -ne $installedHash) {
-    Write-Host 'Instalando dependencias del conversor...'
+    Write-Host 'Installing converter dependencies...'
     & $venvPython -m pip install -r $requirementsPath
-    if ($LASTEXITCODE -ne 0) { throw 'No se pudieron instalar las dependencias.' }
+    if ($LASTEXITCODE -ne 0) { throw 'Could not install the dependencies.' }
     Set-Content -LiteralPath $requirementsStamp -Value $requirementsHash -Encoding ascii
 }
 
 $serverArguments = @((Join-Path $repoRoot 'tools\serve.py'), '--port', $Port)
 if (-not $NoBrowser) { $serverArguments += '--open' }
 & $venvPython @serverArguments
-if ($LASTEXITCODE -ne 0) { throw 'El servidor local termino con un error.' }
+if ($LASTEXITCODE -ne 0) { throw 'The local server exited with an error.' }

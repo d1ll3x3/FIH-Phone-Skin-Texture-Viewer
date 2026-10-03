@@ -1,129 +1,132 @@
 # FIH Phone Skin & Charm Viewer
 
-Visor de skins y colgantes de **Flipping is Hard**, basado en
+A skin and charm viewer for **Flipping is Hard**, based on
 [FIH-Phone-Skin-Texture-Viewer](https://github.com/d1ll3x3/FIH-Phone-Skin-Texture-Viewer).
-Permite previsualizar el telefono y cargar charms convertidos desde un AssetBundle de Unity.
+Preview the phone and load charms converted from Unity AssetBundles.
 
-## Ejecutar en Windows
+## Run On Windows
 
-Instala Python 3.12 o posterior. Abre PowerShell en esta carpeta y ejecuta:
+Install Python 3.12 or later. Open PowerShell in this folder and run:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\start-viewer.ps1
 ```
 
-El script crea un entorno `.venv`, instala `tools/requirements.txt` en el primer
-inicio y abre el navegador. El servidor escucha solo en tu equipo, en
-`http://127.0.0.1:8765/`; si el puerto esta ocupado, utiliza el siguiente libre.
-Mantiene visible la URL elegida en la terminal. Detenlo con `Ctrl+C`.
+The script creates a `.venv` environment, installs `tools/requirements.txt` on
+the first launch, and opens your browser. The server listens only on your
+computer at `http://127.0.0.1:8765/`. If that port is busy, it uses the next
+available port. The selected URL stays visible in the terminal. Stop the server
+with `Ctrl+C`.
 
-Para elegir otro puerto o evitar que se abra otra ventana del navegador:
+To choose another port or prevent a new browser window from opening:
 
 ```powershell
 .\start-viewer.ps1 -Port 9000 -NoBrowser
 ```
 
-En el visor, selecciona **Charm** y carga tu bundle desde el mismo cuadro de
-subida de las texturas, haciendo clic o arrastrando el archivo. El conversor procesa el
-archivo localmente, con un limite de 64 MB, y elimina su copia temporal al terminar.
-El charm de prueba se ofrece como JSON ya convertido, por lo que se puede abrir
-sin instalar Unity ni modificar la instalacion del juego.
-`assets/charms/hat.json` procede del `hatbundle` facilitado para las pruebas;
-`assets/charms/hat.js` contiene el mismo charm para cargarlo como ejemplo estatico.
-`assets/charms/hat-preset.json` conserva el preset MC2 facilitado por el usuario.
-Se aplica por defecto a MeshCloth. Tambien puedes cargar otro preset JSON desde
-el mismo cuadro, con **Charm** seleccionado, sin sustituir la malla actual.
-En esa pestana, **Hide phone** oculta solo la malla del telefono para inspeccionar
-el charm. El giro y las fisicas siguen activos. **Phone collisions** activa las
-colisiones con el telefono; esta desactivado por defecto y es independiente de
-su visibilidad. Estas opciones se mantienen al cambiar de charm o pestana,
-hasta recargar la pagina.
+In the viewer, select **Charm** and upload your bundle using the same upload
+area as textures, either by clicking or dragging the file. The converter
+processes the file locally, with a 64 MB limit, and deletes its temporary copy
+when finished. The sample charm is provided as preconverted JSON, so it can
+be opened without installing Unity or modifying the game installation.
+`assets/charms/hat.json` was extracted from the `hatbundle` supplied for testing.
+`assets/charms/hat.js` contains the same charm as a static sample.
+`assets/charms/hat-preset.json` preserves the supplied MC2 preset and is applied
+to MeshCloth by default. You can also upload another preset JSON with **Charm**
+selected, without replacing the current mesh.
 
-## Convertir Un Bundle A JSON
+In that tab, **Hide phone** hides only the phone mesh so you can inspect the
+charm. Rotation and physics remain active. **Phone collisions** enables
+collisions with the phone. It is disabled by default and independent of phone
+visibility. These settings are retained when switching charms or tabs, until
+the page is reloaded.
 
-Tambien puedes convertir desde la terminal:
+## Convert A Bundle To JSON
+
+You can also convert a bundle from the terminal:
 
 ```powershell
 .\.venv\Scripts\python.exe tools\convert_charm.py "I:\SteamLibrary\steamapps\common\Flipping is Hard Demo\BepInEx\plugins\charmreplacer\hatbundle" "hat.charm.json"
 ```
 
-El JSON contiene geometria, texturas y la jerarquia necesarias para mostrar el
-charm. Cargalo con el mismo control del visor. Para inspeccionar la extraccion,
-puedes pasar `--report "hat.report.json"` al conversor.
+The JSON contains the geometry, textures, and hierarchy needed to display the
+charm. Upload it using the same viewer control. To inspect the extracted data,
+pass `--report "hat.report.json"` to the converter.
 
 ## GitHub Pages
 
-El visor y los charms en JSON funcionan en un alojamiento estatico, incluido
-GitHub Pages. Publica `index.html`, `scripts/`, `assets/` y `vendor/` del repositorio. Para
-cargar otro charm en Pages, conviertelo antes con `tools/convert_charm.py` y
-selecciona el JSON desde el visor.
+The viewer and JSON charms work on static hosting, including GitHub Pages.
+Publish `index.html`, `scripts/`, `assets/`, and `vendor/` from this repository.
+To load another charm on Pages, first convert it with `tools/convert_charm.py`,
+then select the JSON in the viewer.
 
-La carga directa de un bundle de Unity requiere el servidor local de Python.
-GitHub Pages sirve archivos estaticos y no ejecuta el conversor.
+Uploading a Unity bundle directly requires the local Python server.
+GitHub Pages serves static files and cannot run the converter.
 
-## Fisicas Y Compatibilidad
+## Physics And Compatibility
 
-El navegador usa Three.js para la representacion y Cannon.js 0.6.2 para la
-simulacion. El charm de prueba conserva su malla proxy de MagicaCloth: sus
-particulas, puntos fijos y restricciones deforman la malla visible al mover el
-telefono. Otros charms pueden usar sus huesos o un cuerpo colgante, segun los
-datos disponibles. **No ejecuta MagicaCloth ni reproduce exactamente sus fisicas**:
-MagicaCloth es un componente de Unity y sus scripts compilados no se ejecutan
-en el visor web. La simulacion ofrece una previsualizacion; valida el resultado
-final dentro del juego.
+The browser uses Three.js for rendering and Cannon.js 0.6.2 for simulation.
+The sample charm retains its MagicaCloth proxy mesh: particles, fixed points,
+and constraints deform the visible mesh when the phone moves. Other charms can
+use their bones or a hanging rigid body, depending on the available data.
+**The viewer does not run MagicaCloth or reproduce its physics exactly.**
+MagicaCloth is a Unity component, and its compiled scripts cannot run in this
+web viewer. The simulation is a preview; check the final result in the game.
 
-La extraccion conserva los datos disponibles del prefab, sus mallas y sus
-texturas. Las configuraciones o componentes que no puedan representarse en
-el navegador quedan indicados en los avisos del JSON. Los bundles que dependan
-de recursos externos ausentes pueden necesitar una conversion adicional.
+Extraction preserves the available prefab data, meshes, and textures.
+Settings or components that cannot be represented in the browser are listed
+in the JSON warnings. Bundles that depend on missing external resources may
+need additional conversion.
 
-La gorra incluida conserva 60 puntos proxy, cuatro puntos fijos, 45 vertices
-fijos de la malla visible y 165
-restricciones de distancia y las profundidades/jerarquia del prebuild.
-La seleccion fija de MC2 mantiene el enganche en su posicion y orientacion
-locales respecto al telefono, sin endurecer las particulas moviles.
-El preset externo MC2 aporta gravedad (10), damping (0), curvas de restauracion
-y limite de angulo, compresion tether (0.1), rigidez de distancia/flexion,
-atenuacion de restauracion (1), suavizado de inercia y limites de velocidad.
-Las curvas Unity se evaluan con interpolacion Hermite; los angulos usan el rango
-normalizado de 180 grados. Las fuerzas se adaptan a las ecuaciones de Cannon,
-con una respuesta angular mas suave: restauracion al 8% y correccion del limite
-al 10% de sus valores, sin aumentar la rigidez por la masa de las ramas.
-El preset original no se modifica. No se anade viento ni muelles
-para mantener una pose impuesta. El bloque Spring no se utiliza en MeshCloth.
-Cuando el telefono esta quieto y la postura se ha asentado, el conjunto entra
-en reposo para eliminar oscilacion numerica residual. Moverlo reactiva la fisica.
-Tras medio segundo sin movimiento del telefono, se aplica una resistencia
-pasiva a la velocidad para apagar el balanceo, sin atraer la malla a una pose.
-Esa resistencia no se aplica mientras se mueve el telefono.
+The included hat preserves 60 proxy particles, four fixed points, 45 fixed
+vertices in the visible mesh, 165 distance constraints, and the prebuild's
+depths and hierarchy. The MC2 fixed selection keeps the attachment at its
+local position and orientation relative to the phone, without making the
+moving particles stiffer.
 
-Esta adaptacion no reproduce los jobs, las iteraciones ni todas las restricciones
-internas de MagicaCloth. La flexion triangular sigue usando una aproximacion
-mediante distancias, y el visor no tiene animacion local ni viento.
-Las colisiones opcionales usan un volumen rectangular del telefono y esferas
-en las particulas moviles del charm. No son los colliders exactos de Unity ni
-incluyen autocollisiones. Los puntos fijos no colisionan con su propio telefono.
-El bundle por si solo no incluye los parametros de ejecucion del juego: el
-preset es un archivo separado y puede corresponder a una configuracion diferente.
+The external MC2 preset supplies gravity (10), damping (0), angle restoration
+and limit curves, tether compression (0.1), distance and bending stiffness,
+restoration attenuation (1), inertia smoothing, and speed limits.
+Unity curves are evaluated with Hermite interpolation; angles use a normalized
+180-degree range. Forces are adapted to Cannon's equations with a softer
+angular response: restoration uses 8% and limit correction uses 10% of their
+values, without increasing stiffness based on branch mass.
 
-La posicion conserva los offsets X=-0.25 y Z=-0.15 respecto al enganche
-superior derecho, en unidades de altura del telefono. La altura del enganche
-queda fija al 2% respecto al borde superior, sin controles de posicion.
-El charm conserva su escala nativa del bundle,
-incluidas las escalas de sus nodos; no se normaliza para encajar en el telefono.
-La gorra esta girada 180 grados respecto a la orientacion anterior.
-El charm no colisiona con el telefono salvo que actives **Phone collisions**.
+The original preset is not modified. No wind or springs are added to hold an
+imposed pose. The Spring section is not used for MeshCloth. When the phone is
+stationary and the charm has settled, the assembly sleeps to eliminate
+residual numerical oscillation. Moving the phone reactivates physics.
+After half a second without phone movement, passive velocity drag is applied
+to reduce swinging without pulling the mesh toward a pose. This drag is not
+applied while the phone is moving.
 
-Arrastrar la vista gira fisicamente el telefono y sus anclajes; la fisica
-responde a ese movimiento. Un dedo tambien gira el objeto. La rueda o el
-gesto de pinza ajusta el zoom, y el boton derecho desplaza la vista.
-Los botones de vista y la rotacion automatica tambien mueven el telefono.
-La [documentacion de MagicaCloth2](https://magicasoft.jp/en/mc2_about/)
-explica su dependencia de Unity y la limitacion de WebGL.
+This adaptation does not reproduce MagicaCloth's jobs, iterations, or all of
+its internal constraints. Triangle bending still uses a distance-based
+approximation, and the viewer has no local animation or wind.
+Optional collisions use a rectangular phone volume and spheres on the charm's
+moving particles. These are not Unity's exact colliders, and self-collisions
+are not included. Fixed points do not collide with their own phone.
+The bundle alone does not include the game's runtime parameters. The preset
+is a separate file and may correspond to a different configuration.
 
-## Pruebas
+Placement preserves the X=-0.25 and Z=-0.15 offsets from the upper-right
+attachment, measured in phone-height units. The attachment height is fixed at
+2% above the top edge, with no position controls. The charm retains its native
+bundle scale, including node scales; it is not normalized to fit the phone.
+The hat is rotated 180 degrees from its previous orientation.
+The charm does not collide with the phone unless **Phone collisions** is enabled.
 
-Las pruebas de fisicas se ejecutan con Node.js, sin instalar paquetes:
+Dragging the view physically rotates the phone and its anchors; the physics
+responds to that movement. One finger also rotates the object. The mouse wheel
+or a pinch gesture adjusts zoom, and the right mouse button pans the view.
+The view buttons and auto-rotation also move the phone.
+The [MagicaCloth2 documentation](https://magicasoft.jp/en/mc2_about/) explains
+its Unity dependency and WebGL limitation.
+
+## Tests
+
+Physics tests run with Node.js without installing packages. Python tests use
+the local environment created by the launcher:
 
 ```powershell
 node tests/charm-physics.test.cjs
@@ -133,7 +136,7 @@ node tests/charm-collisions.test.cjs
 .\.venv\Scripts\python.exe -m unittest discover -s tools -p "test_*.py"
 ```
 
-Para comprobar el renderizado y los controles en el navegador:
+To check rendering and controls in the browser:
 
 ```powershell
 npm install
@@ -141,6 +144,7 @@ npx playwright install chromium
 npm run test:browser
 ```
 
-La prueba abre el HTML directamente. Define `VIEWER_URL` para usar un servidor,
-`CHARM_BUNDLE` para probar la carga directa de un bundle y `PLAYWRIGHT_CHANNEL`
-como `msedge` para usar Edge instalado. Las capturas se guardan en `.test-output/`.
+The browser test opens the HTML directly. Set `VIEWER_URL` to use a server,
+`CHARM_BUNDLE` to test direct bundle uploads, and `PLAYWRIGHT_CHANNEL` to a value
+such as `msedge` to use an installed Edge browser. Screenshots are saved in
+`.test-output/`.

@@ -92,7 +92,7 @@ class ViewerHandler(SimpleHTTPRequestHandler):
                 raise FileNotFoundError
             file = path.open("rb")
         except (ValueError, OSError):
-            self.send_error(HTTPStatus.NOT_FOUND, "Archivo no encontrado")
+            self.send_error(HTTPStatus.NOT_FOUND, "File not found")
             return None
         try:
             stat = path.stat()
@@ -110,31 +110,31 @@ class ViewerHandler(SimpleHTTPRequestHandler):
 
     def do_POST(self) -> None:
         if urlsplit(self.path).path != "/api/convert-charm":
-            self._json(HTTPStatus.NOT_FOUND, {"error": "Endpoint no encontrado."})
+            self._json(HTTPStatus.NOT_FOUND, {"error": "Endpoint not found."})
             return
         if not self._same_origin():
-            self._json(HTTPStatus.FORBIDDEN, {"error": "Origen no permitido."})
+            self._json(HTTPStatus.FORBIDDEN, {"error": "Origin not allowed."})
             return
         if self.headers.get("Transfer-Encoding"):
-            self._json(HTTPStatus.BAD_REQUEST, {"error": "Envio por bloques no admitido."})
+            self._json(HTTPStatus.BAD_REQUEST, {"error": "Chunked uploads are not supported."})
             return
         length_header = self.headers.get("Content-Length")
         if length_header is None:
-            self._json(HTTPStatus.LENGTH_REQUIRED, {"error": "Falta Content-Length."})
+            self._json(HTTPStatus.LENGTH_REQUIRED, {"error": "Missing Content-Length."})
             return
         try:
             length = int(length_header)
         except ValueError:
-            self._json(HTTPStatus.BAD_REQUEST, {"error": "Content-Length invalido."})
+            self._json(HTTPStatus.BAD_REQUEST, {"error": "Invalid Content-Length."})
             return
         if length > MAX_BUNDLE_BYTES:
-            self._json(HTTPStatus.REQUEST_ENTITY_TOO_LARGE, {"error": "El bundle supera 64 MB."})
+            self._json(HTTPStatus.REQUEST_ENTITY_TOO_LARGE, {"error": "The bundle exceeds the 64 MB limit."})
             return
         if length <= 0:
-            self._json(HTTPStatus.BAD_REQUEST, {"error": "El bundle esta vacio."})
+            self._json(HTTPStatus.BAD_REQUEST, {"error": "The bundle is empty."})
             return
         if not self.server.conversion_gate.acquire(blocking=False):
-            self._json(HTTPStatus.SERVICE_UNAVAILABLE, {"error": "Hay dos conversiones en curso. Reintenta en unos segundos."})
+            self._json(HTTPStatus.SERVICE_UNAVAILABLE, {"error": "Two conversions are already running. Try again in a few seconds."})
             return
         try:
             with tempfile.TemporaryDirectory(prefix="fih-charm-") as temp_dir:
@@ -157,20 +157,20 @@ class ViewerHandler(SimpleHTTPRequestHandler):
                     # Validate before writing response headers, including non-finite floats.
                     json.dumps(data, allow_nan=False)
                 except Exception as error:
-                    self.log_error("Conversion fallida (%s)", type(error).__name__)
+                    self.log_error("Conversion failed (%s)", type(error).__name__)
                     status = HTTPStatus.UNPROCESSABLE_ENTITY
                     data = {
-                        "error": "No se pudo convertir el bundle. Comprueba que contiene un prefab de charm con mallas y texturas compatibles."
+                        "error": "Could not convert the bundle. Check that it contains a charm prefab with supported meshes and textures."
                     }
                 else:
                     status = HTTPStatus.OK
             self._json(status, data)
         except ConnectionError:
-            self._json(HTTPStatus.BAD_REQUEST, {"error": "El bundle se recibio incompleto."})
+            self._json(HTTPStatus.BAD_REQUEST, {"error": "The bundle upload is incomplete."})
         except (socket.timeout, TimeoutError):
-            self._json(HTTPStatus.REQUEST_TIMEOUT, {"error": "Se agoto el tiempo de subida del bundle."})
+            self._json(HTTPStatus.REQUEST_TIMEOUT, {"error": "The bundle upload timed out."})
         except OSError:
-            self._json(HTTPStatus.INTERNAL_SERVER_ERROR, {"error": "No se pudo guardar temporalmente el bundle."})
+            self._json(HTTPStatus.INTERNAL_SERVER_ERROR, {"error": "Could not save the temporary bundle file."})
         finally:
             self.server.conversion_gate.release()
 
@@ -182,30 +182,30 @@ def make_server(port: int, converter: Callable[[Path], dict]) -> ViewerServer:
         except OSError as error:
             if error.errno not in (errno.EADDRINUSE, errno.EACCES) and getattr(error, "winerror", None) not in (10048, 10013):
                 raise
-    raise OSError("No se encontro un puerto local disponible.")
+    raise OSError("No local port is available.")
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Visor local de skins y charms de Flipping is Hard.")
+    parser = argparse.ArgumentParser(description="Local skin and charm viewer for Flipping is Hard.")
     parser.add_argument("--port", type=int, default=8765)
-    parser.add_argument("--open", action="store_true", help="Abrir el visor en el navegador.")
+    parser.add_argument("--open", action="store_true", help="Open the viewer in your browser.")
     args = parser.parse_args()
     if not 1 <= args.port <= 65535:
-        parser.error("El puerto debe estar entre 1 y 65535.")
+        parser.error("The port must be between 1 and 65535.")
     try:
         from convert_charm import convert_bundle
     except ImportError:
-        parser.exit(1, "Faltan dependencias. Ejecuta start-viewer.ps1 o instala tools/requirements.txt.\n")
+        parser.exit(1, "Missing dependencies. Run start-viewer.ps1 or install tools/requirements.txt.\n")
     server = make_server(args.port, convert_bundle)
     url = f"http://127.0.0.1:{server.server_port}/"
-    print(f"Visor disponible: {url}", flush=True)
-    print("Pulsa Ctrl+C para detener el servidor.", flush=True)
+    print(f"Viewer ready: {url}", flush=True)
+    print("Press Ctrl+C to stop the server.", flush=True)
     if args.open:
         webbrowser.open(url)
     try:
         server.serve_forever()
     except KeyboardInterrupt:
-        print("\nServidor detenido.", flush=True)
+        print("\nServer stopped.", flush=True)
     finally:
         server.server_close()
 
